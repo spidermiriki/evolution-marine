@@ -1,8 +1,20 @@
-# Fichiers hors dépôt
+# ── Dossiers hors dépôt ───────────────────────────────────────────────────────
 index.html
+évolution-marine-(4.6)/
 
-# Cache généré par l'éditeur Godot (ne pas versionner)
+# ── Cache de l'éditeur Godot 4 (généré automatiquement, ne pas versionner) ───
 godot/.godot/
 
-# Imports auto-générés
+# ── Fichiers d'import Godot 3 (si migration) ─────────────────────────────────
 *.import
+
+# ── Config d'export (peut contenir des chemins locaux) ───────────────────────
+export_presets.cfg
+
+# ── Traductions compilées (générées depuis les CSV) ──────────────────────────
+*.translation
+
+# ── Fichiers système ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
