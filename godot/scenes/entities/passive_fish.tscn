@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://pfish001"]
+
+[ext_resource type="Script" path="res://scenes/entities/passive_fish.gd" id="1_pfish"]
+
+[node name="PassiveFish" type="CharacterBody2D"]
+script = ExtResource("1_pfish")

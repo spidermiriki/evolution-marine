@@ -1,0 +1,8 @@
+# Fichiers hors dépôt
+index.html
+
+# Cache généré par l'éditeur Godot (ne pas versionner)
+godot/.godot/
+
+# Imports auto-générés
+*.import
