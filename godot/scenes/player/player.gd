@@ -149,7 +149,7 @@ func _update_camouflage() -> void:
 		is_camouflaged = false
 		return
 	match species_id:
-		"sole", "raie", "wobbegong":
+		"sole", "raie", "lotte", "wobbegong":
 			# Camouflage au fond sableux
 			is_camouflaged = (global_position.y >= WORLD_H - _get_radius() - 30.0) \
 				and stealth_cooldown <= 0.0

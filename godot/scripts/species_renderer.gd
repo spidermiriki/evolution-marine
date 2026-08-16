@@ -15,6 +15,8 @@ func _draw() -> void:
 		"aiguille":      _draw_needlefish()
 		"poisson_globe": _draw_pufferfish()
 		"raie":          _draw_ray()
+		"lotte":         _draw_anglerfish()
+		"maquereau":     _draw_mackerel()
 		"baliste":       _draw_triggerfish()
 		"murene":        _draw_moray()
 		"bonite":        _draw_bonito()

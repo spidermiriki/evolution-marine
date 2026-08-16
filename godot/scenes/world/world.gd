@@ -13,7 +13,8 @@ const CORAL_COUNT        := 22
 
 const BOT_POOL: Array[String] = [
 	"crabe", "sole", "aiguille",
-	"poisson_globe", "raie", "murene", "bonite", "baliste",
+	"poisson_globe", "raie", "lotte", "maquereau",
+	"baliste", "murene", "bonite",
 ]
 
 var food_items: Array        = []
@@ -139,11 +140,22 @@ func _check_passive_fish() -> void:
 		var dist := player.global_position.distance_to(pf.global_position)
 
 		if pf.is_dead:
-			if dist < pr + pf.fish_radius:
+			var eaten_by_player := dist < pr + pf.fish_radius
+			var eater_bot: Bot = null
+			if not eaten_by_player:
+				for bot in bots:
+					if bot == null or bot.is_dead: continue
+					if bot.global_position.distance_to(pf.global_position) < bot.bot_radius + pf.fish_radius:
+						eater_bot = bot
+						break
+			if eaten_by_player or eater_bot != null:
 				pf.eat_progress += get_process_delta_time()
 				pf.queue_redraw()
 				if pf.eat_progress >= pf.eat_duration:
-					player.gain_xp(4.0)
+					if eaten_by_player:
+						player.gain_xp(4.0)
+					else:
+						eater_bot.hp = min(eater_bot.max_hp, eater_bot.hp + 15.0)
 					pf.queue_free()
 					passive_fish_list.remove_at(i)
 					_spawn_passive_fish(1)
@@ -177,7 +189,7 @@ func _check_bots() -> void:
 				_spawn_food(1)
 				break
 
-	# Bots morts mangés par joueur
+	# Bots morts mangés par joueur ou par d'autres bots
 	for i in range(bots.size() - 1, -1, -1):
 		var bot: Bot = bots[i]
 		if bot == null:
@@ -186,15 +198,26 @@ func _check_bots() -> void:
 		if not bot.is_dead: continue
 
 		var dist := player.global_position.distance_to(bot.global_position)
-		if dist < pr + bot.bot_radius:
+		var eaten_by_player := dist < pr + bot.bot_radius
+		var eater_bot: Bot = null
+		if not eaten_by_player:
+			for other in bots:
+				if other == null or other.is_dead or other == bot: continue
+				if other.global_position.distance_to(bot.global_position) < other.bot_radius + bot.bot_radius:
+					eater_bot = other
+					break
+		if eaten_by_player or eater_bot != null:
 			bot.eat_progress += get_process_delta_time()
 			bot.queue_redraw()
 			if bot.eat_progress >= bot.eat_duration:
 				var bot_sp := SpeciesDB.get_species(bot.species_id)
 				var tier: int = int(bot_sp.get("tier", 1))
 				var bot_r: float = float(bot_sp.get("radius", 20.0)) * bot.bot_scale
-				player.gain_xp(10.0 + float(tier) * 20.0 + bot_r * 1.5)
-				player.gain_hp(35.0)
+				if eaten_by_player:
+					player.gain_xp(10.0 + float(tier) * 20.0 + bot_r * 1.5)
+					player.gain_hp(35.0)
+				else:
+					eater_bot.hp = min(eater_bot.max_hp, eater_bot.hp + 35.0)
 				bot.queue_free()
 				bots.remove_at(i)
 				_spawn_bot()
