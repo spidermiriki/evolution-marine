@@ -1,0 +1,7 @@
+res://autoload/species_db.gd
+res://scenes/entities/bot.gd
+res://scenes/player/player.gd
+res://scenes/world/world.gd
+res://scripts/species_renderer.gd
+res://scenes/ui/hud.gd
+res://scenes/ui/evolve_panel.gd

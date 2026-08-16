@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://coral001"]
+
+[ext_resource type="Script" path="res://scenes/obstacles/coral.gd" id="1_coral"]
+
+[node name="Coral" type="StaticBody2D"]
+script = ExtResource("1_coral")

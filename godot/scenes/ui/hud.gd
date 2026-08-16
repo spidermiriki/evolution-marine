@@ -8,11 +8,12 @@ var _xp_bar: ProgressBar
 var _stamina_ring: Control
 var _boost_btn: Button
 var _ability_btn: Button
-var _joystick: VirtualJoystick
+var _joystick: Control
 var _death_overlay: ColorRect
 
 var _stamina: float = 100.0
 var _death_flash: float = 0.0
+var _exhausted_flash: float = 0.0
 
 func _ready() -> void:
 	_build_ui()
@@ -150,7 +151,7 @@ func _connect_signals() -> void:
 	_boost_btn.button_up.connect(func(): _set_boost(false))
 	_ability_btn.button_down.connect(_on_ability_pressed)
 
-func get_joystick() -> VirtualJoystick:
+func get_joystick() -> Control:
 	return _joystick
 
 func get_boost_active() -> bool:
@@ -173,7 +174,11 @@ func _on_xp_changed(xp: int, max_xp: int) -> void:
 	_xp_bar.value     = xp
 
 func _on_stamina_changed(value: float) -> void:
+	var was_zero := _stamina <= 0.0
 	_stamina = value
+	# Déclenche un flash rouge si la stamina vient de s'épuiser
+	if _stamina <= 0.0 and not was_zero:
+		_exhausted_flash = 1.0
 	_stamina_ring.queue_redraw()
 
 func _on_species_changed(species_id: String) -> void:
@@ -192,10 +197,22 @@ func _process(delta: float) -> void:
 	if _death_flash > 0.0:
 		_death_flash = max(0.0, _death_flash - delta * 1.8)
 		_death_overlay.color.a = _death_flash * 0.45
+	if _exhausted_flash > 0.0:
+		_exhausted_flash = max(0.0, _exhausted_flash - delta * 2.5)
+		_stamina_ring.queue_redraw()
 
 func _draw_stamina_ring() -> void:
 	var center := Vector2(47.5, 47.5)
 	var r := 42.0
 	var start := -PI / 2.0
 	var end   := start + (_stamina / 100.0) * TAU
-	_stamina_ring.draw_arc(center, r, start, end, 48, Color("5fe0ff"), 5.0, true)
+
+	# Anneau épuisé : fond rouge clignotant
+	if _exhausted_flash > 0.0:
+		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.015)
+		_stamina_ring.draw_arc(center, r, -PI / 2.0, -PI / 2.0 + TAU, 48,
+			Color(1.0, 0.2, 0.2, _exhausted_flash * pulse), 5.0, true)
+
+	# Anneau normal (bleu → gris si épuisé)
+	var ring_color := Color("5fe0ff") if _stamina > 0.01 else Color(0.4, 0.4, 0.4, 0.5)
+	_stamina_ring.draw_arc(center, r, start, end, 48, ring_color, 5.0, true)

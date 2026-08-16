@@ -1,0 +1,35 @@
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="Évolution Marine (4.6)"
+run/main_scene="uid://main001"
+config/quit_on_go_back=false
+config/features=PackedStringArray("4.6", "Mobile")
+config/run/main_scene="res://scenes/main.tscn"
+
+[autoload]
+
+SpeciesDB="*res://autoload/species_db.gd"
+GameManager="*res://autoload/game_manager.gd"
+
+[debug]
+
+gdscript/warnings/treat_warnings_as_errors=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true

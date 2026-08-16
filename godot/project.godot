@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Évolution Marine"
 run/main_scene="uid://main001"
 config/quit_on_go_back=false
-config/features=PackedStringArray("4.6", "Mobile")
+config/features=PackedStringArray("4.7", "Mobile")
 config/run/main_scene="res://scenes/main.tscn"
 
 [autoload]

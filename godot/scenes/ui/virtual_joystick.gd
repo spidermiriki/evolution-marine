@@ -1,5 +1,5 @@
 extends Control
-class_name VirtualJoystick
+class_name MarineJoystick
 
 signal direction_changed(vec: Vector2)
 
