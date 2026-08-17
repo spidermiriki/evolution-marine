@@ -25,11 +25,11 @@ const SPECIES: Dictionary = {
 	},
 
 	# ── PALIER 2 ──────────────────────────────────────────────────────────────
-	# Poisson-ballon : tank défensif, se gonfle quand blessé (géré dans player.gd)
+	# Poisson-ballon : tank défensif, se gonfle manuellement (bouton)
 	"poisson_globe": {
 		"name": "Poisson-ballon", "emoji": "🐡", "tier": 2, "cls": "tank",
 		"radius": 28.0, "speed": 115.0, "xp_to_evolve": 200,
-		"max_hp": 180, "manual_attack": false, "attack_dmg": 20.0,
+		"max_hp": 180, "manual_attack": false, "can_puff": true, "attack_dmg": 20.0,
 		"stamina_drain": 16.7,
 		"evolves_to": ["baliste", "murene", "bonite"]
 	},

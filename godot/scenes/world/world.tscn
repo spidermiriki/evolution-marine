@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://world001"]
+[gd_scene format=3 uid="uid://world001"]
 
-[ext_resource type="Script" path="res://scenes/world/world.gd" id="1_world"]
+[ext_resource type="Script" uid="uid://y7o6ru2vd1bh" path="res://scenes/world/world.gd" id="1_world"]
+[ext_resource type="AudioStream" uid="uid://ecmvcgr2uk41" path="res://assets/sounds/background-in-game.ogg" id="2_sl2e5"]
+[ext_resource type="AudioStream" uid="uid://dah7vhfqxih6s" path="res://assets/sounds/die.ogg" id="3_1fp7r"]
 
-[node name="World" type="Node2D"]
+[node name="World" type="Node2D" unique_id=559956838]
 script = ExtResource("1_world")
+stream_bg = ExtResource("2_sl2e5")
+stream_die = ExtResource("3_1fp7r")

@@ -23,6 +23,10 @@ var bots: Array              = []
 var rocks: Array             = []
 var corals: Array            = []
 var player: Player           = null
+var _player_eating_ids: Dictionary = {}
+
+@export var stream_bg:  AudioStream   ## musique de fond en boucle
+@export var stream_die: AudioStream   ## son de mort (joueur et bots)
 
 # Scènes préchargées
 var FoodScene        := preload("res://scenes/entities/food_item.tscn")
@@ -34,6 +38,7 @@ var PlayerScene      := preload("res://scenes/player/player.tscn")
 
 func _ready() -> void:
 	GameManager.world = self
+	_start_bg_music()
 	_spawn_player()
 	_spawn_rocks(ROCK_COUNT)
 	_spawn_corals(CORAL_COUNT)
@@ -41,6 +46,39 @@ func _ready() -> void:
 	_spawn_passive_fish(PASSIVE_FISH_COUNT)
 	for _i in range(BOT_COUNT):
 		_spawn_bot()
+
+func _start_bg_music() -> void:
+	if stream_bg == null:
+		return
+	if stream_bg is AudioStreamOggVorbis:
+		(stream_bg as AudioStreamOggVorbis).loop = true
+	var bgm := AudioStreamPlayer.new()
+	bgm.stream = stream_bg
+	bgm.volume_db = -8.0
+	add_child(bgm)
+	bgm.play()
+
+func play_die_sound(pos: Vector2) -> void:
+	if stream_die == null: return
+	var p := AudioStreamPlayer2D.new()
+	p.stream = stream_die
+	p.global_position = pos
+	p.volume_db = 10.0
+	p.max_distance = 1200.0
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
+
+func spawn_corpse(pos: Vector2, sid: String, entity_scale: float) -> void:
+	var bot := BotScene.instantiate() as Bot
+	bot.bot_scale = entity_scale
+	add_child(bot)
+	bot.global_position = pos
+	bot.setup(sid)
+	bot.is_dead = true
+	bot.hp = 0.0
+	bot.queue_redraw()
+	bots.append(bot)
 
 func _far_from_center(pos: Vector2) -> bool:
 	return pos.distance_to(CENTER) > 260.0
@@ -123,6 +161,7 @@ func _check_food_collection() -> void:
 			food_items.remove_at(i)
 			player.gain_xp(6.0)
 			player.gain_hp(2.0)
+			player.trigger_bite()
 			_spawn_food(1)
 
 func _check_passive_fish() -> void:
@@ -149,9 +188,16 @@ func _check_passive_fish() -> void:
 						eater_bot = bot
 						break
 			if eaten_by_player or eater_bot != null:
+				var pid := pf.get_instance_id()
+				if eaten_by_player and pid not in _player_eating_ids:
+					player.trigger_eat_start(1)
+					_player_eating_ids[pid] = true
+				elif not eaten_by_player:
+					_player_eating_ids.erase(pid)
 				pf.eat_progress += get_process_delta_time()
 				pf.queue_redraw()
 				if pf.eat_progress >= pf.eat_duration:
+					_player_eating_ids.erase(pid)
 					if eaten_by_player:
 						player.gain_xp(4.0)
 					else:
@@ -167,6 +213,7 @@ func _check_passive_fish() -> void:
 					player.bite_cooldown = 0.4
 					player.stealth_cooldown = 3.0
 					player.is_camouflaged = false
+					player.trigger_bite()
 
 func _check_bots() -> void:
 	if player == null:
@@ -207,9 +254,17 @@ func _check_bots() -> void:
 					eater_bot = other
 					break
 		if eaten_by_player or eater_bot != null:
+			var bid := bot.get_instance_id()
+			if eaten_by_player and bid not in _player_eating_ids:
+				var bot_tier := int(SpeciesDB.get_species(bot.species_id).get("tier", 1))
+				player.trigger_eat_start(bot_tier)
+				_player_eating_ids[bid] = true
+			elif not eaten_by_player:
+				_player_eating_ids.erase(bid)
 			bot.eat_progress += get_process_delta_time()
 			bot.queue_redraw()
 			if bot.eat_progress >= bot.eat_duration:
+				_player_eating_ids.erase(bid)
 				var bot_sp := SpeciesDB.get_species(bot.species_id)
 				var tier: int = int(bot_sp.get("tier", 1))
 				var bot_r: float = float(bot_sp.get("radius", 20.0)) * bot.bot_scale

@@ -5,6 +5,7 @@ signal xp_changed(xp: int, max_xp: int)
 signal stamina_changed(value: float)
 signal species_changed(species_id: String)
 signal player_died
+signal respawn_needed
 signal evolve_ready(choices: Array)
 signal evolve_started
 signal evolve_finished(new_id: String)

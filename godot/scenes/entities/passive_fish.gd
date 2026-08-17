@@ -61,6 +61,16 @@ func _draw() -> void:
 	var r := fish_radius
 	var tail_wag := 0.0 if is_dead else sin(anim_tick * 2.0) * 3.0
 
+	# Sang
+	if is_dead:
+		var alpha := clampf(1.0 - eat_progress / eat_duration, 0.1, 0.85)
+		for i in range(6):
+			var a := hue * 0.017 + float(i) * 0.95
+			var d := r * (0.45 + fposmod(hue * 0.011 + float(i) * 0.31, 0.75))
+			var s := r * (0.18 + fposmod(hue * 0.008 + float(i) * 0.19, 0.22))
+			draw_circle(Vector2(cos(a) * d, sin(a) * d * 0.5), s,
+				Color(0.75, 0.02, 0.05, alpha))
+
 	if is_dead:
 		draw_set_transform(Vector2.ZERO, PI)
 

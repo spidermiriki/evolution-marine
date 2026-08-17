@@ -38,6 +38,10 @@ func _build_ui() -> void:
 	_evolve_panel.layer = 10
 	add_child(_evolve_panel)
 
+	var respawn_panel := preload("res://scenes/ui/respawn_panel.gd").new()
+	respawn_panel.layer = 15
+	add_child(respawn_panel)
+
 	_start_menu = preload("res://scenes/ui/start_menu.gd").new()
 	_start_menu.layer = 20
 	_start_menu.species_selected.connect(_on_species_selected)

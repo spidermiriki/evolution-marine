@@ -162,8 +162,13 @@ func _set_boost(state: bool) -> void:
 		GameManager.player.boost_active = state
 
 func _on_ability_pressed() -> void:
-	if GameManager.player != null:
+	if GameManager.player == null:
+		return
+	var sp := SpeciesDB.get_species(_current_species)
+	if sp.get("manual_attack", false):
 		GameManager.player.trigger_claw_attack()
+	elif sp.get("can_puff", false):
+		GameManager.player.trigger_puff()
 
 func _on_hp_changed(hp: int, max_hp: int) -> void:
 	_hp_bar.max_value = max_hp
@@ -181,11 +186,21 @@ func _on_stamina_changed(value: float) -> void:
 		_exhausted_flash = 1.0
 	_stamina_ring.queue_redraw()
 
+var _current_species: String = ""
+
 func _on_species_changed(species_id: String) -> void:
+	_current_species = species_id
 	var sp := SpeciesDB.get_species(species_id)
 	_species_label.text = sp.get("emoji", "") + " " + sp.get("name", species_id)
 	_tier_label.text    = "Tier %d · %s" % [sp.get("tier", 1), sp.get("cls", "")]
-	_ability_btn.visible = sp.get("manual_attack", false)
+	if sp.get("manual_attack", false):
+		_ability_btn.text    = "✂️"
+		_ability_btn.visible = true
+	elif sp.get("can_puff", false):
+		_ability_btn.text    = "🐡"
+		_ability_btn.visible = true
+	else:
+		_ability_btn.visible = false
 
 func _on_player_died() -> void:
 	_death_flash_start()
@@ -200,6 +215,11 @@ func _process(delta: float) -> void:
 	if _exhausted_flash > 0.0:
 		_exhausted_flash = max(0.0, _exhausted_flash - delta * 2.5)
 		_stamina_ring.queue_redraw()
+	# Grisage du bouton puff quand indisponible
+	if _ability_btn.visible and _current_species == "poisson_globe" and GameManager.player != null:
+		var p := GameManager.player
+		var unavailable: bool = p.get("is_puffed") or float(p.get("puff_cooldown")) > 0.0
+		_ability_btn.modulate.a = 0.35 if unavailable else 1.0
 
 func _draw_stamina_ring() -> void:
 	var center := Vector2(47.5, 47.5)

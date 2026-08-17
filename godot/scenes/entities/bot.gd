@@ -20,6 +20,7 @@ var move_angle: float = 0.0
 var wander_timer: float = 0.0
 var attack_cooldown: float = 0.0
 var anim_tick: float = 0.0
+var poison_timer: float = 0.0
 
 var _renderer: SpeciesRenderer = null
 var _hp_bar: Node2D = null
@@ -57,6 +58,20 @@ func _physics_process(delta: float) -> void:
 	if attack_cooldown > 0.0:
 		attack_cooldown -= delta
 
+	# Poison (toxine du poisson-ballon gonflé)
+	if poison_timer > 0.0:
+		poison_timer -= delta
+		hp -= 8.0 * delta   # 8 HP/s pendant 5 s → ~40 HP total
+		queue_redraw()      # pour la barre mauve
+		if hp <= 0.0:
+			hp = 0.0
+			is_dead = true
+			if GameManager.world != null:
+				GameManager.world.play_die_sound(global_position)
+
+	if is_dead:
+		return
+
 	var sp := SpeciesDB.get_species(species_id)
 	var bot_speed: float = float(sp.get("speed", 100.0)) * 0.7
 
@@ -84,8 +99,14 @@ func _physics_process(delta: float) -> void:
 				best_radius = other.bot_radius
 
 	# Décider état selon taille relative
+	# Un bot empoisonné fuit le poisson-ballon gonflé, quelle que soit sa taille
 	if best_target != null:
-		state = "chase" if (bot_radius >= best_radius * 0.9) else "flee"
+		if poison_timer > 0.0 and best_target is Player \
+				and (best_target as Player).is_puffed \
+				and (best_target as Player).species_id == "poisson_globe":
+			state = "flee"
+		else:
+			state = "chase" if (bot_radius >= best_radius * 0.9) else "flee"
 	else:
 		state = "wander"
 
@@ -128,28 +149,41 @@ func _physics_process(delta: float) -> void:
 			if best_target is Player:
 				if not (best_target as Player).is_camouflaged:
 					best_target.take_damage(dmg)
-					# Toxine : si le poisson-ballon est gonflé, le bot prend des dégâts en retour
+					# Toxine : si le poisson-ballon est gonflé, le bot est empoisonné
 					if (best_target as Player).is_puffed and (best_target as Player).species_id == "poisson_globe":
-						hp -= 30.0
-						if hp <= 0.0:
-							hp = 0.0
-							is_dead = true
-					attack_cooldown = 0.8
+						poison_timer = 5.0        # 8 HP/s x 5 s = 40 HP
+						attack_cooldown = 5.0     # bloque re-morsure pendant le poison
+					else:
+						attack_cooldown = 0.8
 			elif best_target is Bot:
 				(best_target as Bot).hp -= dmg
 				if (best_target as Bot).hp <= 0.0:
 					(best_target as Bot).hp = 0.0
 					(best_target as Bot).is_dead = true
+					if GameManager.world != null:
+						GameManager.world.play_die_sound((best_target as Bot).global_position)
 				attack_cooldown = 0.8
 
 func _draw() -> void:
-	# Barre de vie au-dessus
+	# Sang
+	if is_dead:
+		var alpha := clampf(1.0 - eat_progress / eat_duration, 0.1, 0.85)
+		var sv := fposmod(bot_scale * 137.0, 1.0)
+		for i in range(9):
+			var a := sv * TAU + float(i) * 0.698
+			var d := bot_radius * (0.35 + fposmod(sv * float(i + 1) * 2.3, 0.8))
+			var s := bot_radius * (0.1 + fposmod(sv * float(i + 2) * 1.7, 0.18))
+			draw_circle(Vector2(cos(a) * d, sin(a) * d * 0.7), s,
+				Color(0.75, 0.02, 0.05, alpha))
+
+	# Barre de vie au-dessus (mauve si empoisonné)
 	if not is_dead and hp < max_hp:
 		var bar_w := 36.0
 		var bar_h := 5.0
 		var y_off := -(bot_radius + 12.0)
+		var bar_color := Color("a855f7") if poison_timer > 0.0 else Color("ff4d4d")
 		draw_rect(Rect2(-bar_w/2, y_off, bar_w, bar_h), Color(0,0,0,0.5))
-		draw_rect(Rect2(-bar_w/2, y_off, bar_w * (hp/max_hp), bar_h), Color("ff4d4d"))
+		draw_rect(Rect2(-bar_w/2, y_off, bar_w * (hp/max_hp), bar_h), bar_color)
 
 	if is_dead and eat_progress > 0.0:
 		var bar_w := 40.0

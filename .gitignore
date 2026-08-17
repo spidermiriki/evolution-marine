@@ -5,8 +5,13 @@ index.html
 # ── Cache de l'éditeur Godot 4 (généré automatiquement, ne pas versionner) ───
 godot/.godot/
 
-# ── Fichiers d'import Godot 3 (si migration) ─────────────────────────────────
+# ── Fichiers d'import Godot (générés automatiquement) ────────────────────────
 *.import
+
+# ── Assets binaires lourds (sons, musiques) ───────────────────────────────────
+*.ogg
+*.mp3
+*.wav
 
 # ── Config d'export (peut contenir des chemins locaux) ───────────────────────
 export_presets.cfg
